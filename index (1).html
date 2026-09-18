@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Phase 2 practice: reasoning</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#eef2f7; --card:#ffffff; --ink:#14213d; --muted:#56627e; --line:#d5dde9;
+  --accent:#2b59c3; --accent-ink:#ffffff; --soft:#f2f5fa; --sel:#e6eeff; --chip:#e8edf6;
+  --good:#1b7f4f; --good-bg:#e4f5ec; --bad:#b93a26; --bad-bg:#fbe9e5; --grey:#a3adc4;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0d1324; --card:#171f38; --ink:#eaf0ff; --muted:#a2acc8; --line:#2f3a5e;
+    --accent:#8aa9ff; --accent-ink:#0d1324; --soft:#1e2745; --sel:#22305c; --chip:#26305a;
+    --good:#5fd6a0; --good-bg:#173a30; --bad:#ff9482; --bad-bg:#452630; --grey:#5f6b93;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0d1324; --card:#171f38; --ink:#eaf0ff; --muted:#a2acc8; --line:#2f3a5e;
+  --accent:#8aa9ff; --accent-ink:#0d1324; --soft:#1e2745; --sel:#22305c; --chip:#26305a;
+  --good:#5fd6a0; --good-bg:#173a30; --bad:#ff9482; --bad-bg:#452630; --grey:#5f6b93;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--ink)}
+body{font-family:"Atkinson Hyperlegible","Segoe UI",system-ui,-apple-system,Roboto,sans-serif;font-size:18px;line-height:1.5;min-height:100vh;-webkit-font-smoothing:antialiased}
+.app{max-width:780px;margin:0 auto;padding:18px 16px 56px}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+h1{font-size:1.7rem;line-height:1.2;margin:0 0 12px;font-weight:700}
+p{margin:0 0 12px}
+.muted{color:var(--muted)}
+.fine{color:var(--muted);font-size:.9rem;margin:18px 0 0}
+.top{display:flex;justify-content:space-between;align-items:center;margin:0 2px 12px}
+.brand{font-weight:700;color:var(--muted)}
+.clock{font-variant-numeric:tabular-nums;color:var(--muted);background:var(--chip);padding:2px 12px;border-radius:99px;font-size:.95rem}
+.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:26px}
+@media (max-width:560px){.card{padding:18px}}
+
+/* start screen */
+.modes{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:18px 0 14px}
+.modes.three{grid-template-columns:repeat(3,1fr);margin-top:8px}
+.mode{font:inherit;color:var(--ink);text-align:left;background:var(--card);border:2px solid var(--line);border-radius:14px;padding:14px 16px;cursor:pointer;display:flex;flex-direction:column;gap:2px;min-height:64px}
+.mode b{font-size:1.1rem}
+.mode span{color:var(--muted);font-size:.92rem}
+.mode.main{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.mode.main span{color:var(--accent-ink);opacity:.85}
+.mode:hover{border-color:var(--accent)}
+@media (max-width:560px){.modes,.modes.three{grid-template-columns:1fr}}
+.pref{border:0;padding:0;margin:20px 0 6px}
+.pref legend{padding:0;font-weight:700;margin-bottom:6px}
+.pref label{display:flex;gap:10px;align-items:flex-start;margin:6px 0;cursor:pointer}
+.pref input{margin-top:6px;accent-color:var(--accent);width:18px;height:18px}
+.tips{margin:16px 0 0;padding-left:20px;color:var(--muted)}
+.tips li{margin:4px 0}
+
+/* question screen */
+.meta{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:10px}
+.chip{background:var(--chip);padding:3px 12px;border-radius:99px;font-size:.95rem;font-weight:700}
+.bar{height:8px;background:var(--line);border-radius:99px;overflow:hidden;margin-bottom:6px}
+.bar>i{display:block;height:100%;background:var(--accent)}
+@media (prefers-reduced-motion:no-preference){.bar>i{transition:width .35s ease}}
+.prompt{font-size:1.3rem;line-height:1.35;font-weight:700;margin:18px 0 14px}
+.big{font-size:1.7rem;font-weight:700;letter-spacing:.03em;margin:4px 0 18px}
+.opts{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:8px}
+.opt{font:inherit;font-size:1.08rem;color:var(--ink);text-align:left;display:flex;align-items:center;gap:12px;padding:12px 14px;min-height:60px;background:var(--card);border:2px solid var(--line);border-radius:14px;cursor:pointer}
+.opt:hover:not(:disabled){border-color:var(--accent)}
+.opt:disabled{cursor:default}
+.opt .k{flex:none;width:30px;height:30px;border-radius:50%;background:var(--chip);display:grid;place-items:center;font-weight:700;font-size:.95rem}
+.opt.sel{border-color:var(--accent);background:var(--sel)}
+.opt.good{border-color:var(--good);background:var(--good-bg)}
+.opt.bad{border-color:var(--bad);background:var(--bad-bg)}
+.opts.figs{grid-template-columns:repeat(4,1fr)}
+.opts.figs .opt{flex-direction:column;align-items:center;gap:8px;padding:10px}
+.opts.figs .fig{width:100%;max-width:112px;height:auto}
+@media (max-width:560px){.opts,.opts.figs{grid-template-columns:1fr 1fr}.opts:not(.figs){grid-template-columns:1fr}}
+.fb{margin-top:16px;padding:12px 16px;border-radius:12px;background:var(--soft);border-left:5px solid var(--line)}
+.fb.good{border-left-color:var(--good)}
+.fb.bad{border-left-color:var(--bad)}
+.fb strong{display:block}
+.fb.good strong{color:var(--good)}
+.fb.bad strong{color:var(--bad)}
+.actions{display:flex;justify-content:flex-end;margin-top:18px}
+.btn{font:inherit;font-weight:700;background:var(--accent);color:var(--accent-ink);border:0;border-radius:12px;padding:12px 26px;min-height:48px;cursor:pointer}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.btn.ghost{background:transparent;color:var(--ink);border:2px solid var(--line)}
+
+/* figures */
+.seq,.analogy{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:6px 0 20px}
+.analogy{gap:12px}
+.pair{display:flex;align-items:center;gap:8px}
+.arr{color:var(--muted);font-size:.9rem}
+.fig{width:80px;height:80px;display:block;border:2px solid var(--line);border-radius:12px;background:var(--card)}
+.fig.q{border-style:dashed}
+.qm{font-size:44px;font-weight:700;fill:var(--muted);font-family:inherit}
+.shape{fill:var(--ink)}
+.outl{fill:none;stroke:var(--ink);stroke-width:3.5;stroke-linejoin:round}
+.f-black{fill:var(--ink);stroke:var(--ink);stroke-width:3;stroke-linejoin:round}
+.f-white{fill:var(--card);stroke:var(--ink);stroke-width:3;stroke-linejoin:round}
+.f-grey{fill:var(--grey);stroke:var(--ink);stroke-width:3;stroke-linejoin:round}
+.frame{fill:none;stroke:var(--muted);stroke-width:3}
+.hollow{fill:var(--card);stroke:var(--ink);stroke-width:3.5}
+
+/* results */
+.score{font-size:3rem;font-weight:700;line-height:1;margin:6px 0 4px}
+.rows{margin:18px 0}
+.row{display:grid;grid-template-columns:1fr auto auto;gap:16px;align-items:center;padding:10px 0;border-top:1px solid var(--line)}
+.row:last-child{border-bottom:1px solid var(--line)}
+.pips{display:inline-flex;gap:4px}
+.pips i{width:12px;height:12px;border-radius:50%;border:2px solid var(--accent);display:block}
+.pips i.on{background:var(--accent)}
+details.rev{border:1px solid var(--line);border-radius:12px;margin:8px 0;background:var(--soft)}
+details.rev summary{cursor:pointer;padding:10px 14px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+details.rev .in{padding:0 14px 12px}
+.rev .fig{width:72px;height:72px}
+.rev .seq{margin-bottom:10px}
+.row-actions{display:flex;gap:12px;flex-wrap:wrap;margin-top:20px}
+</style>
+</head>
+<body>
+<main class="app" id="app"><noscript>This practice page needs JavaScript switched on.</noscript></main>
+<script>
+(function(){
+'use strict';
+const app=document.getElementById('app');
+const rnd=(a,b)=>Math.floor(Math.random()*(b-a+1))+a;
+const pick=a=>a[rnd(0,a.length-1)];
+const shuffle=a=>{const r=a.slice();for(let i=r.length-1;i>0;i--){const j=rnd(0,i);[r[i],r[j]]=[r[j],r[i]];}return r;};
+const clamp=(v,lo,hi)=>Math.max(lo,Math.min(hi,v));
+const LETTERS=['A','B','C','D'];
+
+/* ---------------- VERBAL BANK: [level, prompt, correct, wrong[], explanation] ---------------- */
+const V=[
+[1,'Hot is to cold as up is to …','down',['over','high','low'],'Hot and cold are opposites, and so are up and down.'],
+[1,'Kitten is to cat as puppy is to …','dog',['wolf','bark','fur'],'A kitten is a young cat. A puppy is a young dog.'],
+[1,'Finger is to hand as toe is to …','foot',['shoe','leg','nail'],'A finger is part of a hand. A toe is part of a foot.'],
+[1,'Chef is to kitchen as teacher is to …','classroom',['garden','hospital','farm'],'A chef works in a kitchen. A teacher works in a classroom.'],
+[1,'Which is the odd one out?','carrot',['apple','banana','pear'],'Apples, bananas and pears are fruit. A carrot is a vegetable.'],
+[1,'Which is the odd one out?','Moon',['Mercury','Venus','Mars'],'Mercury, Venus and Mars are planets. The Moon orbits the Earth.'],
+[1,'Which is the odd one out?','drum',['violin','guitar','cello'],'Violin, guitar and cello are string instruments. A drum is a percussion instrument.'],
+[1,'Which is the odd one out?','eagle',['cheetah','lion','tiger'],'Cheetah, lion and tiger are big cats. An eagle is a bird.'],
+[1,'Which word means the same as RAPID?','quick',['slow','quiet','late'],'Rapid means fast, so quick is closest.'],
+[1,'Which word means the same as ENORMOUS?','huge',['tiny','ancient','dull'],'Enormous means very big, so huge is closest.'],
+[1,'Sunday is to Monday as March is to …','April',['February','May','June'],'Monday comes after Sunday, and April comes after March.'],
+[1,'Which letter comes next? A, C, E, G, …','I',['H','J','K'],'It skips one letter each time: A, C, E, G, I.'],
+
+[2,'Which word is the opposite of GENEROUS?','mean',['kind','wealthy','lazy'],'Generous means giving freely. Mean means unwilling to share.'],
+[2,'Which word is the opposite of ANCIENT?','modern',['old','dusty','broken'],'Ancient means very old. The opposite is modern.'],
+[2,'Which word is the opposite of BRAVE?','cowardly',['strong','careless','angry'],'Brave means not afraid. Cowardly means easily frightened.'],
+[2,'Which word means the same as CONCEAL?','hide',['reveal','protect','carry'],'To conceal something is to hide it.'],
+[2,'Which letter comes next? Z, X, V, T, …','R',['S','Q','P'],'Going backwards and skipping one letter each time: Z, X, V, T, R.'],
+[2,'In a code, every letter moves one place forward in the alphabet, so CAT becomes DBU. What does DOG become?','EPH',['DPH','EOH','CNF'],'D→E, O→P, G→H, so DOG becomes EPH.'],
+[2,'Which letter is three places after F in the alphabet?','I',['H','J','K'],'F, G, H, I. Three steps on from F is I.'],
+[2,'Which word can go in front of each of these to make new words? … ball, … print, … path','foot',['hand','air','back'],'Football, footprint and footpath.'],
+[2,'Sam is taller than Ben. Ben is taller than Ali. Who is the shortest?','Ali',['Sam','Ben','They are the same'],'Sam is tallest, then Ben, then Ali. Ali is shortest.'],
+[2,'Which word best completes the sentence? The library was so … you could hear a pin drop.','silent',['crowded','colourful','tiny'],'Only silent fits with being able to hear a pin drop.'],
+[2,'Which word is spelt correctly?','necessary',['neccessary','necesary','neccesary'],"Necessary has one c and two s's."],
+[2,'A pen is to writing as a knife is to …','cutting',['sharp','fork','steel'],'A pen is used for writing. A knife is used for cutting.'],
+[2,'Which pair of words has OPPOSITE meanings?','expand – shrink',['begin – start','large – big','quick – fast'],'Expand means get bigger and shrink means get smaller. The other pairs mean the same thing.'],
+
+[3,'Tom is older than Ella. Ella is older than Zoe. Zoe is older than Max. Who is second oldest?','Ella',['Tom','Zoe','Max'],'From oldest to youngest: Tom, Ella, Zoe, Max. Ella is second.'],
+[3,'If today is Wednesday, what day will it be in 10 days?','Saturday',['Friday','Sunday','Monday'],'10 days is one week and 3 days. Three days after Wednesday is Saturday.'],
+[3,'Which word means the same as RELUCTANT?','unwilling',['eager','nervous','rude'],'Reluctant means not keen to do something, so unwilling is closest.'],
+[3,'Which word means the same as OBSOLETE?','outdated',['fragile','popular','delicate'],'Obsolete means no longer used because something newer has replaced it.'],
+[3,'Which word is the opposite of SCARCE?','plentiful',['rare','tiny','costly'],'Scarce means hard to find. Plentiful means there is lots of it.'],
+[3,'Which word is the opposite of TRANQUIL?','agitated',['peaceful','gentle','silent'],'Tranquil means calm. Agitated means restless and disturbed.'],
+[3,'Which word best completes the sentence? The scientist was so … that she checked every figure twice.','meticulous',['careless','cheerful','distant'],'Meticulous means very careful about detail.'],
+[3,'Which is the odd one out?','circle',['triangle','square','pentagon'],'Triangle, square and pentagon all have straight sides. A circle does not.'],
+[3,'Which is the odd one out?','shout',['whisper','murmur','mutter'],'Whisper, murmur and mutter are all quiet ways of speaking. Shout is loud.'],
+[3,'Author is to novel as composer is to …','symphony',['orchestra','conductor','theatre'],'An author creates a novel. A composer creates a symphony.'],
+[3,'Fin is to fish as wing is to …','bird',['feather','sky','flight'],'A fin is part of a fish. A wing is part of a bird.'],
+[3,'Drought is to water as famine is to …','food',['hunger','crops','rain'],'A drought is a shortage of water. A famine is a shortage of food.'],
+[3,'Each letter moves two places forward in the alphabet, so MAP becomes OCR. What does SUN become?','UWP',['TVO','SVP','UVO'],'S→U, U→W, N→P, so SUN becomes UWP.'],
+[3,'If A = 1, B = 2, C = 3 and so on, what is the total value of the letters in the word BAD?','7',['6','8','9'],'B = 2, A = 1, D = 4. Then 2 + 1 + 4 = 7.'],
+
+[4,'Ana, Ben, Cara and Dev run a race. Ana finished before Ben. Cara finished after Ben. Dev finished before Ana. Who came second?','Ana',['Dev','Ben','Cara'],'Dev beat Ana, Ana beat Ben, and Ben beat Cara. The order is Dev, Ana, Ben, Cara, so Ana came second.'],
+[4,"Mia, Leo and Ravi each have one pet: a cat, a dog or a fish. Mia is allergic to fur. Leo's pet barks. Who has the cat?",'Ravi',['Mia','Leo','We cannot tell'],"Mia can't have fur, so she has the fish. Leo's pet barks, so he has the dog. That leaves the cat for Ravi."],
+[4,'Which word means the same as AMBIGUOUS?','unclear',['obvious','careful','generous'],'Ambiguous means it could be understood in more than one way, so unclear is closest.'],
+[4,'Which word means the same as BENEVOLENT?','kind',['wealthy','powerful','wicked'],'Benevolent means well-meaning and kind.'],
+[4,'Which word is the opposite of FRUGAL?','extravagant',['thrifty','modest','careful'],'Frugal means careful with money. Extravagant means spending too much.'],
+[4,'Which word best completes the sentence? Although the exam was hard, Priya stayed … and finished every question.','composed',['agitated','absent','reckless'],'Composed means calm and in control.'],
+[4,'Thermometer is to temperature as ruler is to …','length',['inches','wood','straight'],'A thermometer measures temperature. A ruler measures length.'],
+[4,'Which is the odd one out?','novel',['sonnet','haiku','limerick'],'Sonnet, haiku and limerick are all kinds of poem. A novel is a long story written in prose.'],
+[4,'In a code, MONDAY is written NPOEBZ. How is FRIDAY written?','GSJEBZ',['GSJEBY','ESHCZX','GRJEBZ'],'Each letter moves one place forward: F→G, R→S, I→J, D→E, A→B, Y→Z.'],
+[4,'The day after tomorrow is Sunday. What day was it yesterday?','Thursday',['Wednesday','Friday','Saturday'],'If the day after tomorrow is Sunday, today is Friday. So yesterday was Thursday.'],
+[4,'Which pair of words is closest in meaning?','abundant – plentiful',['fragile – sturdy','ancient – modern','reluctant – eager'],'Abundant and plentiful both mean there is a lot of something. The other pairs are opposites.'],
+[4,'Which word does NOT fit with the others?','hastily',['gradually','slowly','steadily'],'Gradually, slowly and steadily all describe a gentle pace. Hastily means very quickly.']
+];
+const vkey=x=>'v|'+x[1]+'|'+x[2];
+function verbalQ(x){
+  const [level,prompt,correct,wrong,explain]=x;
+  const o=shuffle([correct,...wrong]);
+  return {section:'Verbal',level,prompt,stim:'',figs:false,options:o.map(t=>({t})),answer:o.indexOf(correct),explain,key:vkey(x)};
+}
+
+/* ---------------- NUMERICAL ---------------- */
+function num(level,prompt,stim,correct,dist,explain,fmt){
+  fmt=fmt||String;
+  const vals=[correct];
+  for(const d of dist){ if(Number.isInteger(d)&&d>=0&&!vals.includes(d)) vals.push(d); if(vals.length===4)break; }
+  let k=2;
+  while(vals.length<4){ for(const c of [correct+k,correct-k]){ if(c>=0&&!vals.includes(c)&&vals.length<4) vals.push(c); } k++; }
+  const o=shuffle(vals);
+  return {section:'Numerical',level,prompt,stim:stim?`<p class="big">${stim}</p>`:'',figs:false,options:o.map(v=>({t:fmt(v)})),answer:o.indexOf(correct),explain,key:'n|'+prompt+'|'+stim};
+}
+const pounds=v=>'£'+v;
+const N={
+1:[
+ ()=>{const a=rnd(1,20),d=rnd(2,5);const t=[0,1,2,3,4].map(i=>a+i*d);const n=a+5*d;
+   return num(1,'What number comes next?',t.join(', ')+', ?',n,[n+d,n-d,n+1,n-1],`It goes up by ${d} each time. ${t[4]} + ${d} = ${n}.`);},
+ ()=>{const a=rnd(6,9),b=rnd(6,9),p=a*b;
+   return num(1,`What is ${a} × ${b}?`,'',p,[p+a,p-a,p+b,p-b],`${a} × ${b} = ${p}.`);},
+ ()=>{const d=pick([2,4,10]),m=d*rnd(3,12),ans=m/d;
+   return num(1,`What is 1/${d} of ${m}?`,'',ans,[m-ans,ans+1,ans-1,ans*2],`Divide ${m} by ${d}. ${m} ÷ ${d} = ${ans}.`);},
+ ()=>{let p,c;do{p=pick([3,4,5,6]);c=pick([2,3,4]);}while(p*c>=20);
+   const nm=pick(['Maya','Sam','Ali','Zoe','Ben']),it=pick(['notebooks','stickers','pens']),ch=20-p*c;
+   return num(1,`${nm} buys ${c} ${it} at £${p} each and pays with a £20 note. How much change does ${nm} get?`,'',ch,[p*c,20-p,ch+2,ch-1],`${c} × £${p} = £${p*c}. Then £20 − £${p*c} = £${ch}.`,pounds);}
+],
+2:[
+ ()=>{const a=rnd(10,60),d=rnd(6,15);const t=[0,1,2,3,4].map(i=>a+i*d);const n=a+5*d;
+   return num(2,'What number comes next?',t.join(', ')+', ?',n,[n+d,n-d,n+1,n-2],`It goes up by ${d} each time. ${t[4]} + ${d} = ${n}.`);},
+ ()=>{const s=rnd(60,120),d=rnd(4,9);const t=[0,1,2,3,4].map(i=>s-i*d);const n=s-5*d;
+   return num(2,'What number comes next?',t.join(', ')+', ?',n,[n+d,n-d,n+1,n-1],`It goes down by ${d} each time. ${t[4]} − ${d} = ${n}.`);},
+ ()=>{const s=pick([6,8,12]),n=rnd(5,12),tot=s*n;
+   return num(2,`Pencils are packed in boxes of ${s}. How many boxes are needed for ${tot} pencils?`,'',n,[n+1,n-1,tot-s,s+n],`${tot} ÷ ${s} = ${n}.`);},
+ ()=>{const h=rnd(1,8),m=pick([0,15,30,45]),e=pick([20,35,40,50]);const st=h*60+m,en=st+60+e;
+   const f=x=>{let hh=Math.floor(x/60);const mm=x%60;if(hh>12)hh-=12;return hh+':'+String(mm).padStart(2,'0')+'pm';};
+   return num(2,`A film starts at ${f(st)} and lasts 1 hour ${e} minutes. What time does it finish?`,'',en,[en+10,en-10,en+60,en-15],`${f(st)} + 1 hour = ${f(st+60)}. Then add ${e} minutes to get ${f(en)}.`,f);},
+ ()=>{const p=pick([10,50]);const base=p===10?10*rnd(3,25):2*rnd(10,60);const ans=base*p/100;
+   return num(2,`What is ${p}% of ${base}?`,'',ans,[ans*2,ans+2,ans-1,base-ans+1],p===10?`10% is the same as dividing by 10. ${base} ÷ 10 = ${ans}.`:`50% is half. ${base} ÷ 2 = ${ans}.`);},
+ ()=>{const a=rnd(3,9),b=rnd(4,12);
+   return num(2,'What number goes in the gap?',`? ÷ ${a} = ${b}`,a*b,[a*b+a,a*b-a,a+b,a*b+b],`Work backwards. ${b} × ${a} = ${a*b}.`);}
+],
+3:[
+ ()=>{const a=rnd(1,10);const t=[a,a+2,a+5,a+9,a+14];const n=a+20;
+   return num(3,'What number comes next?',t.join(', ')+', ?',n,[n+1,n-1,n+6,n-3],`The gaps grow by 1 each time (+2, +3, +4, +5), so the next gap is +6. ${t[4]} + 6 = ${n}.`);},
+ ()=>{const f=pick([2,3]),a=rnd(1,4);const t=[a,a*f,a*f*f,a*f*f*f];const n=t[3]*f;
+   return num(3,'What number comes next?',t.join(', ')+', ?',n,[t[3],n+a,n-a,n+f],`Each number is ${f} times the one before. ${t[3]} × ${f} = ${n}.`);},
+ ()=>{const d=pick([3,4,5,8]),k=rnd(2,d-1),m=d*rnd(3,12),u=m/d,ans=u*k;
+   return num(3,`What is ${k}/${d} of ${m}?`,'',ans,[u,ans+u,ans-1,m-ans],`${m} ÷ ${d} = ${u}. Then ${u} × ${k} = ${ans}.`);},
+ ()=>{const o=pick([{p:20,u:5},{p:25,u:4},{p:75,u:4}]);const base=o.u*rnd(3,30),ans=base*o.p/100;
+   return num(3,`What is ${o.p}% of ${base}?`,'',ans,[base-ans,ans*2,ans+2,ans-1],
+     o.p===20?`20% is one fifth. ${base} ÷ 5 = ${ans}.`:o.p===25?`25% is one quarter. ${base} ÷ 4 = ${ans}.`:`75% is three quarters. ${base} ÷ 4 = ${base/4}, then × 3 = ${ans}.`);},
+ ()=>{const r=pick([[1,2],[2,3],[1,3],[3,4],[2,5]]),k=rnd(2,8),tot=(r[0]+r[1])*k,ans=r[1]*k;
+   return num(3,`A bag has red and blue counters in the ratio ${r[0]}:${r[1]}. There are ${tot} counters altogether. How many are blue?`,'',ans,[r[0]*k,ans+k,ans-k,tot/2],`${r[0]} + ${r[1]} = ${r[0]+r[1]} parts. ${tot} ÷ ${r[0]+r[1]} = ${k} in each part. Blue is ${r[1]} × ${k} = ${ans}.`);},
+ ()=>{const a=[0,1,2,3].map(()=>rnd(6,20)),s=a.reduce((x,y)=>x+y,0),c=[];
+   for(let v=4;v<=24;v++){if((s+v)%5===0)c.push(v);}
+   const f=pick(c),mean=(s+f)/5;
+   return num(3,`The mean of five numbers is ${mean}. Four of them are ${a.join(', ')}. What is the fifth number?`,'',f,[mean,f+1,f-1,f+5],`Five numbers with a mean of ${mean} add up to ${mean*5}. The four you know add up to ${s}. So the fifth is ${mean*5} − ${s} = ${f}.`);},
+ ()=>{const L=rnd(6,12),w=rnd(3,L-1),area=L*w,ans=2*(L+w);
+   return num(3,`A rectangle has an area of ${area} cm² and a length of ${L} cm. What is its perimeter?`,'',ans,[L+w,area,2*L+w,ans+2],`Width = ${area} ÷ ${L} = ${w} cm. Perimeter = 2 × (${L} + ${w}) = ${ans} cm.`,v=>v+' cm');}
+],
+4:[
+ ()=>{const s=rnd(1,4),k=rnd(2,6);const t=[s,2*s,2*s+k,4*s+2*k,4*s+3*k];const n=t[4]*2;
+   return num(4,'What number comes next?',t.join(', ')+', ?',n,[t[4]+k,n+k,n-k,t[4]+t[2]],`The rule alternates: double, then add ${k}. The last step was "add ${k}", so now we double. ${t[4]} × 2 = ${n}.`);},
+ ()=>{const a=rnd(2,9),da=rnd(2,5),b=rnd(35,60),db=rnd(2,5);
+   const t=[a,b,a+da,b-db,a+2*da,b-2*db];const n=a+3*da;
+   return num(4,'What number comes next?',t.join(', ')+', ?',n,[b-3*db,n+1,n-1,a+2*da],`Two patterns are mixed together. Every other number goes up by ${da} (${a}, ${a+da}, ${a+2*da}, …) and the rest go down by ${db}. The next number continues the rising pattern: ${a+2*da} + ${da} = ${n}.`);},
+ ()=>{const n=rnd(4,15),a=rnd(2,7),b=rnd(3,15),tot=a*n+b;
+   return num(4,'What number goes in the gap?',`${a} × ? + ${b} = ${tot}`,n,[tot-b,n+1,n-1,Math.round(tot/a)],`Take away ${b}: ${tot} − ${b} = ${tot-b}. Then divide by ${a}: ${tot-b} ÷ ${a} = ${n}.`);},
+ ()=>{const ds=shuffle([2,3,4,5]),d1=ds[0],d2=ds[1],m=d1*d2*rnd(2,8),l1=m-m/d1,ans=l1-l1/d2;
+   return num(4,`Ben has £${m}. He spends 1/${d1} of it, then spends 1/${d2} of what is left. How much does he have now?`,'',ans,[m-m/d1-m/d2,l1,l1/d2,ans+2],`1/${d1} of £${m} is £${m/d1}, so £${l1} is left. 1/${d2} of £${l1} is £${l1/d2}, so he has £${ans} left.`,pounds);},
+ ()=>{const v=pick([30,40,45,50,60,70,80]),t1=rnd(2,4),t2=t1+rnd(1,3),d=v*t1,ans=v*t2;
+   return num(4,`A coach travels ${d} km in ${t1} hours. At the same speed, how far will it travel in ${t2} hours?`,'',ans,[ans+v,ans-v,d+t2,ans+10],`Speed = ${d} ÷ ${t1} = ${v} km/h. Then ${v} × ${t2} = ${ans} km.`,v2=>v2+' km');},
+ ()=>{const m=20*rnd(3,8),p=pick([10,20,25]),after=m*(100-p)/100,c=rnd(2,8),ans=after-c;
+   return num(4,`A coat costs £${m}. In a sale the price is reduced by ${p}%. A further £${c} is then taken off. What is the final price?`,'',ans,[after,m-c,ans+c,ans-2],`${p}% of £${m} is £${m*p/100}, so the sale price is £${after}. Then £${after} − £${c} = £${ans}.`,pounds);}
+]};
+
+/* ---------------- NON-VERBAL ---------------- */
+const fig=(inner,extra)=>`<svg class="fig ${extra||''}" viewBox="0 0 80 80" aria-hidden="true">${inner}</svg>`;
+const QM='<svg class="fig q" viewBox="0 0 80 80" role="img" aria-label="missing shape"><text x="40" y="54" text-anchor="middle" class="qm">?</text></svg>';
+const L=(a,m,f)=>`<g transform="rotate(${a||0} 40 40)${m?' translate(80 0) scale(-1 1)':''}"><path d="M22 10 H38 V54 H58 V70 H22 Z" class="${f==='out'?'outl':'shape'}"/></g>`;
+const mod=(a)=>((a%360)+360)%360;
+function nv(level,prompt,stim,correct,wrong,explain){
+  const u=[correct];
+  for(const w of wrong){ if(!u.includes(w)) u.push(w); }
+  const o=shuffle(u.slice(0,4));
+  return {section:'Non-verbal',level,prompt,stim,figs:true,options:o.map(h=>({h})),answer:o.indexOf(correct),explain,key:'x|'+prompt+'|'+stim+'|'+correct};
+}
+const seqBox=h=>`<div class="seq">${h}</div>`;
+
+function rotSeq(level,steps,mirrorTrap){
+  const step=pick(steps);
+  const start=pick(step%90===0?[0,90,180,270]:[0,45,90,135,180,225,270,315]);
+  const ang=i=>mod(start+step*i);
+  const frames=[0,1,2,3].map(i=>fig(L(ang(i)))).join('')+QM;
+  const c=ang(4);
+  const w=[fig(L(mod(c+90))),fig(L(mod(c+180))),mirrorTrap?fig(L(c,true)):fig(L(mod(c+270)))];
+  return nv(level,'Which shape comes next in the sequence?',seqBox(frames),fig(L(c)),w,
+    `The shape turns ${Math.abs(step)}° ${step>0?'clockwise':'anticlockwise'} each time, so keep turning by the same amount.${mirrorTrap?' Watch out for the mirror image.':''}`);
+}
+const dotFrame=n=>{let s='';for(let i=0;i<n;i++){const r=Math.floor(i/3),c=i%3;s+=`<circle cx="${20+c*20}" cy="${20+r*20}" r="6" class="shape"/>`;}return fig(s);};
+function dotsSeq(level,steps){
+  const s=pick(steps),n=rnd(1,s===1?5:2),c=n+3*s;
+  const shown=[n,n+s,n+2*s].map(dotFrame).join('')+QM;
+  const w=[c-s,c+1,c-1,c+2,c-2,c-3].filter(v=>v>=1&&v<=9&&v!==c).filter((v,i,a)=>a.indexOf(v)===i).slice(0,3);
+  return nv(level,'How many dots should the next picture have?',seqBox(shown),dotFrame(c),w.map(dotFrame),
+    `Each picture has ${s} more dot${s>1?'s':''} than the one before, so the next has ${c}.`);
+}
+const KINDS=['circle','square','triangle'],FILLS=['black','white','grey'];
+const FILLW={black:'solid',white:'empty',grey:'shaded'};
+const drawKind=(k,f)=>{const c='f-'+f;
+  if(k==='circle')return `<circle cx="40" cy="40" r="22" class="${c}"/>`;
+  if(k==='square')return `<rect x="18" y="18" width="44" height="44" class="${c}"/>`;
+  return `<polygon points="40,14 66,62 14,62" class="${c}"/>`;};
+function shapePattern(level,ns){
+  const kinds=shuffle(KINDS),fills=shuffle(FILLS);
+  const item=i=>({k:kinds[i%3],f:fills[i%3]});
+  const n=pick(ns);
+  const frames=[...Array(n).keys()].map(i=>fig(drawKind(item(i).k,item(i).f))).join('')+QM;
+  const it=item(n),oth=FILLS.filter(x=>x!==it.f),nx=item(n+1);
+  const desc=i=>`${FILLW[item(i).f]} ${item(i).k}`;
+  return nv(level,'Which shape comes next in the pattern?',seqBox(frames),fig(drawKind(it.k,it.f)),
+    [fig(drawKind(it.k,oth[0])),fig(drawKind(it.k,oth[1])),fig(drawKind(nx.k,nx.f))],
+    `The pattern repeats every three shapes: ${desc(0)}, ${desc(1)}, ${desc(2)}. So the next one is a ${desc(n)}.`);
+}
+function oddMirror(level){
+  const angs=shuffle([0,90,180,270]),odd=rnd(0,3);
+  const items=angs.map((a,i)=>fig(L(a,i===odd)));
+  const o=items.map(h=>({h}));
+  return {section:'Non-verbal',level,prompt:'Which one is the odd one out?',stim:'',figs:true,options:o,answer:odd,
+    explain:'Three are the same shape, just turned round. One is a mirror image. Turning it can never make it match the others.',key:'x|odd|'+items.join('')};
+}
+function analogy(level,withFill){
+  const r=pick([90,180,270]),a1=pick([0,90,180,270]),a3=pick([0,90,180,270]);
+  const f1=pick(['solid','out']),f3=pick(['solid','out']);
+  const opp=f=>f==='solid'?'out':'solid';
+  const a2=mod(a1+r),f2=withFill?opp(f1):f1;
+  const a4=mod(a3+r),f4=withFill?opp(f3):f3;
+  const stim=`<div class="analogy"><div class="pair">${fig(L(a1,false,f1))}<span class="arr">is to</span>${fig(L(a2,false,f2))}</div><span class="arr">as</span><div class="pair">${fig(L(a3,false,f3))}<span class="arr">is to</span>${QM}</div></div>`;
+  const correct=fig(L(a4,false,f4));
+  const w=[fig(L(mod(a4+90),false,f4)),fig(L(a4,true,f4)),withFill?fig(L(a4,false,f3)):fig(L(a4,false,opp(f4)))];
+  return nv(level,'Which shape completes the second pair?',stim,correct,w,
+    `The rule is: turn ${r}° clockwise${withFill?' and swap solid and outline':''}. Do the same to the third shape.`);
+}
+function twoAttr(level,steps){
+  const step=pick(steps),start=pick(step%90===0?[0,90,180,270]:[0,45,90,135,180,225,270,315]);
+  const f0=pick(['solid','out']);
+  const opp=f=>f==='solid'?'out':'solid';
+  const ang=i=>mod(start+step*i),fl=i=>i%2===0?f0:opp(f0);
+  const frames=[0,1,2,3].map(i=>fig(L(ang(i),false,fl(i)))).join('')+QM;
+  const c=ang(4),cf=fl(4);
+  return nv(level,'Which shape comes next in the sequence?',seqBox(frames),fig(L(c,false,cf)),
+    [fig(L(c,false,opp(cf))),fig(L(mod(c+90),false,cf)),fig(L(mod(c+180),false,opp(cf)))],
+    `Two things change together: the shape turns ${Math.abs(step)}° ${step>0?'clockwise':'anticlockwise'} each time, and it swaps between solid and outline.`);
+}
+function mirrorAlt(level){
+  const step=pick([90,-90]),start=pick([0,90,180,270]);
+  const ang=i=>mod(start+step*i);
+  const frames=[0,1,2,3,4].map(i=>fig(L(ang(i),i%2===1))).join('')+QM;
+  const c=ang(5);
+  return nv(level,'Which shape comes next in the sequence?',seqBox(frames),fig(L(c,true)),
+    [fig(L(c,false)),fig(L(mod(c+90),true)),fig(L(mod(c+180),true))],
+    `The long side turns ${Math.abs(step)}° ${step>0?'clockwise':'anticlockwise'} each time, and the short foot swaps sides in every picture.`);
+}
+const CORN=[[18,18],[62,18],[62,62],[18,62]];
+const movers=(pa,pb)=>fig(`<rect x="10" y="10" width="60" height="60" class="frame"/><circle cx="${CORN[pa][0]}" cy="${CORN[pa][1]}" r="7" class="shape"/><circle cx="${CORN[pb][0]}" cy="${CORN[pb][1]}" r="7" class="hollow"/>`);
+function twoMovers(level){
+  const a=rnd(0,3),b=(a+pick([1,3]))%4;
+  const pa=i=>mod4(a+i),pb=i=>mod4(b-i);
+  const frames=[0,1,2,3,4].map(i=>movers(pa(i),pb(i))).join('')+QM;
+  const A=pa(5),B=pb(5);
+  return nv(level,'Where will the dots be in the next picture?',seqBox(frames),movers(A,B),
+    [movers((A+2)%4,B),movers(A,(B+2)%4),movers((A+2)%4,(B+2)%4)],
+    'The black dot moves one corner clockwise each time. The white dot moves one corner anticlockwise each time.');
+}
+function mod4(v){return ((v%4)+4)%4;}
+const X={
+1:[()=>rotSeq(1,[90,-90],false),()=>dotsSeq(1,[1]),()=>shapePattern(1,[4])],
+2:[()=>oddMirror(2),()=>rotSeq(2,[45,135,-45],true),()=>dotsSeq(2,[2]),()=>shapePattern(2,[5,6])],
+3:[()=>analogy(3,false),()=>analogy(3,true),()=>twoAttr(3,[90,-90])],
+4:[()=>mirrorAlt(4),()=>twoMovers(4),()=>analogy(4,true),()=>twoAttr(4,[45,-45,135])]
+};
+
+/* ---------------- SESSION ---------------- */
+const SEC={
+ 'Verbal':{name:'Verbal reasoning',tip:'Words, letters and logic. Read every word of the question before you look at the answers.'},
+ 'Numerical':{name:'Numerical reasoning',tip:'Number patterns and maths problems. Work out the answer first, then look for it in the options.'},
+ 'Non-verbal':{name:'Non-verbal reasoning',tip:'Shapes and patterns. Work out what changes each time (turning, flipping, counting, swapping) before you choose.'}
+};
+const MODES={
+ full:{plan:[['Verbal',8],['Numerical',8],['Non-verbal',8]]},
+ quick:{plan:[['Verbal',4],['Numerical',4],['Non-verbal',4]]},
+ 'Verbal':{plan:[['Verbal',10]]},
+ 'Numerical':{plan:[['Numerical',10]]},
+ 'Non-verbal':{plan:[['Non-verbal',10]]}
+};
+let S=null,timer=null,screen='start',prefInstant=true;
+const fmtTime=ms=>{const s=Math.floor(ms/1000);return Math.floor(s/60)+':'+String(s%60).padStart(2,'0');};
+const strip=h=>h.replace(/<[^>]*>/g,'');
+
+function gen(sec,l){
+  if(sec==='Verbal'){const pool=V.filter(x=>x[0]===l&&!S.seen.has(vkey(x)));return pool.length?verbalQ(pick(pool)):null;}
+  return pick(sec==='Numerical'?N[l]:X[l])();
+}
+function makeQ(sec,level){
+  const order=[level,level-1,level+1,level-2,level+2,level-3,level+3].filter(l=>l>=1&&l<=4);
+  for(const l of order){
+    for(let t=0;t<30;t++){
+      const q=gen(sec,l);
+      if(!q)break;
+      if(!S.seen.has(q.key)){S.seen.add(q.key);q.usedLevel=l;return q;}
+    }
+  }
+  const q=gen(sec,level)||gen(sec,1)||gen(sec,2);q.usedLevel=level;return q;
+}
+const topbar=clock=>`<header class="top"><span class="brand">Phase 2 practice</span>${clock?`<span class="clock" id="clock" aria-label="Time so far">${fmtTime(Date.now()-S.t0)}</span>`:''}</header>`;
+
+function showStart(){
+  clearInterval(timer);S=null;screen='start';
+  app.innerHTML=`${topbar(false)}
+  <section class="card">
+    <h1>Reasoning practice</h1>
+    <p>Verbal, numerical and non-verbal questions, on screen. It adjusts as you go: get one right and the next is harder, get one wrong and it eases off. The real test works the same way.</p>
+    <div class="modes">
+      <button class="mode main" data-m="full"><b>Full practice</b><span>24 questions, about 25 minutes</span></button>
+      <button class="mode" data-m="quick"><b>Quick warm-up</b><span>12 questions, about 12 minutes</span></button>
+    </div>
+    <p class="muted" style="margin-bottom:0">Or practise one section (10 questions):</p>
+    <div class="modes three">
+      <button class="mode" data-m="Verbal"><b>Verbal</b></button>
+      <button class="mode" data-m="Numerical"><b>Numerical</b></button>
+      <button class="mode" data-m="Non-verbal"><b>Non-verbal</b></button>
+    </div>
+    <fieldset class="pref">
+      <legend>Answers</legend>
+      <label><input type="radio" name="fb" value="now" ${prefInstant?'checked':''}><span>Show if I was right after each question, with a short explanation</span></label>
+      <label><input type="radio" name="fb" value="end" ${prefInstant?'':'checked'}><span>Exam style: no feedback until the end</span></label>
+    </fieldset>
+    <ul class="tips">
+      <li>Read the whole question, then check every answer before you choose.</li>
+      <li>Stuck? Take your best guess and move on.</li>
+      <li>Some will feel really hard. That is normal, because the test keeps stretching you.</li>
+      <li>Keys: A to D or 1 to 4 to answer, Enter for next.</li>
+    </ul>
+    <p class="fine">Original practice questions written for this page, in the style of the test. They are not copied from any official paper.</p>
+  </section>`;
+  app.querySelectorAll('.mode').forEach(b=>b.onclick=()=>start(b.dataset.m));
+  app.querySelectorAll('input[name=fb]').forEach(r=>r.onchange=()=>{prefInstant=r.value==='now';});
+}
+function start(modeKey){
+  const m=MODES[modeKey];
+  S={mode:modeKey,plan:m.plan,secIdx:0,inSec:0,level:{'Verbal':2,'Numerical':2,'Non-verbal':2},seen:new Set(),qs:[],cur:null,picked:null,locked:false,instant:prefInstant,t0:Date.now(),total:m.plan.reduce((s,p)=>s+p[1],0)};
+  clearInterval(timer);
+  timer=setInterval(()=>{const el=document.getElementById('clock');if(el&&S)el.textContent=fmtTime(Date.now()-S.t0);},1000);
+  showIntro();
+}
+function showIntro(){
+  screen='intro';
+  const [sec,n]=S.plan[S.secIdx],info=SEC[sec];
+  app.innerHTML=`${topbar(true)}
+  <section class="card">
+    ${S.plan.length>1?`<p class="muted">Section ${S.secIdx+1} of ${S.plan.length}</p>`:''}
+    <h1>${info.name}</h1>
+    <p>${info.tip}</p>
+    <p class="muted">${n} questions. They get harder as you get answers right.</p>
+    <div class="actions" style="justify-content:flex-start"><button class="btn" id="go">Start</button></div>
+  </section>`;
+  const go=document.getElementById('go');
+  go.onclick=()=>{S.inSec=0;nextQuestion();};
+  go.focus();
+}
+function nextQuestion(){
+  const sec=S.plan[S.secIdx][0];
+  S.cur=makeQ(sec,S.level[sec]);S.picked=null;S.locked=false;
+  renderQ();
+}
+function isLast(){return S.secIdx===S.plan.length-1&&S.inSec===S.plan[S.secIdx][1]-1;}
+function renderQ(){
+  screen='q';
+  const q=S.cur,[sec,n]=S.plan[S.secIdx],pct=Math.round(S.qs.length/S.total*100);
+  app.innerHTML=`${topbar(true)}
+  <section class="card">
+    <div class="meta"><span class="chip">${SEC[sec].name}</span><span class="muted">Question ${S.inSec+1} of ${n}</span></div>
+    <div class="bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${pct}"><i style="width:${pct}%"></i></div>
+    <h2 class="prompt">${q.prompt}</h2>
+    ${q.stim}
+    <div class="opts ${q.figs?'figs':''}" role="group" aria-label="Answers">
+      ${q.options.map((o,i)=>`<button class="opt" data-i="${i}" aria-label="Answer ${LETTERS[i]}"><span class="k">${LETTERS[i]}</span>${o.h||o.t}</button>`).join('')}
+    </div>
+    <div id="fb" aria-live="polite"></div>
+    <div class="actions"><button class="btn" id="next" disabled>${isLast()?'Finish':'Next'}</button></div>
+  </section>`;
+  app.querySelectorAll('.opt').forEach(b=>b.onclick=()=>choose(+b.dataset.i));
+  document.getElementById('next').onclick=advance;
+}
+function choose(i){
+  if(screen!=='q'||S.locked)return;
+  S.picked=i;
+  const btns=[...app.querySelectorAll('.opt')];
+  btns.forEach((b,j)=>b.classList.toggle('sel',!S.instant&&j===i));
+  if(S.instant){
+    S.locked=true;
+    const q=S.cur,ok=i===q.answer;
+    btns[q.answer].classList.add('good');
+    if(!ok)btns[i].classList.add('bad');
+    btns.forEach(b=>b.disabled=true);
+    document.getElementById('fb').innerHTML=`<div class="fb ${ok?'good':'bad'}"><strong>${ok?'Correct.':'Not this time.'}</strong>${q.explain}</div>`;
+  }
+  const nx=document.getElementById('next');
+  nx.disabled=false;nx.focus({preventScroll:true});
+}
+function advance(){
+  if(S.picked===null)return;
+  const q=S.cur,sec=S.plan[S.secIdx][0],n=S.plan[S.secIdx][1],ok=S.picked===q.answer;
+  S.qs.push({sec,level:q.usedLevel,q,pick:S.picked,ok});
+  S.level[sec]=clamp(S.level[sec]+(ok?1:-1),1,4);
+  S.inSec++;
+  if(S.inSec>=n){
+    S.secIdx++;
+    if(S.secIdx>=S.plan.length)return results();
+    return showIntro();
+  }
+  nextQuestion();
+}
+const pips=n=>`<span class="pips" role="img" aria-label="Hardest level answered correctly: ${n} of 4">${[1,2,3,4].map(i=>`<i class="${i<=n?'on':''}"></i>`).join('')}</span>`;
+function results(){
+  clearInterval(timer);screen='results';
+  const took=fmtTime(Date.now()-S.t0);
+  const total=S.qs.length,right=S.qs.filter(x=>x.ok).length,pct=right/total;
+  const secs=[...new Set(S.qs.map(x=>x.sec))];
+  const rows=secs.map(sec=>{
+    const xs=S.qs.filter(x=>x.sec===sec),r=xs.filter(x=>x.ok),top=r.reduce((m,x)=>Math.max(m,x.level),0);
+    return `<div class="row"><span>${SEC[sec].name}</span><span>${r.length} / ${xs.length}</span>${pips(top)}</div>`;
+  }).join('');
+  const msg=pct>=0.8?'Sharp work. That is exactly how you want to feel going in.':pct>=0.6?'Solid. Look at the ones you missed below, then call it a day.':'Good practice. These are meant to be tricky. Look through the ones below, then have a proper rest.';
+  const wrong=S.qs.map((x,i)=>({x,i})).filter(o=>!o.x.ok);
+  const review=wrong.map(({x,i})=>{
+    const q=x.q,a=q.options[q.answer],mine=x.pick!==null?q.options[x.pick]:null;
+    const cell=o=>o?(o.h||o.t):'no answer';
+    return `<details class="rev"><summary>Q${i+1}: ${strip(q.prompt)}</summary><div class="in">${q.stim}
+      <p><strong>Right answer: ${LETTERS[q.answer]}</strong> ${q.figs?'':cell(a)}</p>${q.figs?`<div class="seq">${cell(a)}</div>`:''}
+      <p class="muted">You chose ${mine?LETTERS[x.pick]:'nothing'}${!q.figs&&mine?': '+cell(mine):''}.</p>
+      <p>${q.explain}</p></div></details>`;
+  }).join('');
+  app.innerHTML=`${topbar(false)}
+  <section class="card">
+    <h1>${msg}</h1>
+    <div class="score">${right} / ${total}</div>
+    <p class="muted">Finished in ${took}. The dots show the hardest level you got right in each section. Reaching the higher dots is a good sign, because the test only gets harder when you keep answering correctly.</p>
+    <div class="rows">${rows}</div>
+    ${wrong.length?`<h2 style="font-size:1.2rem;margin:20px 0 6px">Questions to look at</h2>${review}`:'<p>No misses. Nothing to review.</p>'}
+    <p class="fine">That is plenty for today. A rest and an early night will do more for tomorrow than another paper.</p>
+    <div class="row-actions"><button class="btn" id="again">Go again with new questions</button><button class="btn ghost" id="home">Back to start</button></div>
+  </section>`;
+  document.getElementById('again').onclick=()=>start(S.mode);
+  document.getElementById('home').onclick=showStart;
+}
+document.addEventListener('keydown',e=>{
+  if(screen!=='q'||!S||e.metaKey||e.ctrlKey||e.altKey)return;
+  const k=e.key.toLowerCase();
+  const i=('abcd'.indexOf(k)>-1&&k.length===1)?'abcd'.indexOf(k):('1234'.indexOf(k)>-1&&k.length===1?'1234'.indexOf(k):-1);
+  if(i>-1&&i<S.cur.options.length){choose(i);}
+  else if((k==='enter'||k==='arrowright')&&document.activeElement&&document.activeElement.tagName!=='BUTTON'){const nx=document.getElementById('next');if(nx&&!nx.disabled)nx.click();}
+});
+window.__practice={V,N,X,verbalQ,gen:(sec,l)=>{S=S||{seen:new Set()};return gen(sec,l);}};
+showStart();
+})();
+</script>
+</body>
+</html>
